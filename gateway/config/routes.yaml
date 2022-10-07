@@ -2,6 +2,6 @@ controllers:
     resource: ../src/Controller/
     type: attribute
 
-index:
+user:
     path: /
     controller: App\Controller\APIController::index

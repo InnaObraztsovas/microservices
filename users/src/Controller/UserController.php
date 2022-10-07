@@ -30,7 +30,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/user', name: 'user_store', methods:'POST')]
-    public function createUser (ManagerRegistry $doctrine, Request $request)
+    public function createUser (ManagerRegistry $doctrine, Request $request): Response
     {
         $entityManager = $doctrine->getManager();
 
@@ -41,7 +41,7 @@ class UserController extends AbstractController
 
         $entityManager->flush();
 
-//        return ?
+        return $this->json('The new user is created',  201);
 
     }
 
@@ -50,6 +50,9 @@ class UserController extends AbstractController
     {
         $repository = $doctrine->getRepository(User::class);
         $user = $repository->find($id);
+        if (!$user) {
+            return $this->json('No user found for id' . $id, 404);
+        }
         return $this->json($user);
     }
 

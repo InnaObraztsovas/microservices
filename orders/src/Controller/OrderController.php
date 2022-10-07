@@ -32,7 +32,7 @@ class OrderController extends AbstractController
     }
 
     #[Route('/users/{id}/orders', name: 'order_store', methods:'POST')]
-    public function createUser (ManagerRegistry $doctrine, Request $request)
+    public function createOrder (ManagerRegistry $doctrine, Request $request): Response
     {
         $entityManager = $doctrine->getManager();
 
@@ -44,7 +44,7 @@ class OrderController extends AbstractController
 
         $entityManager->flush();
 
-//        return ?
+        return $this->json('The new order is created',  201);
 
     }
 
@@ -53,6 +53,9 @@ class OrderController extends AbstractController
     {
         $repository = $doctrine->getRepository(Order::class);
         $order = $repository->find($id);
+        if (!$order) {
+            return $this->json('No order found for id' . $id, 404);
+        }
         return $this->json($order);
     }
 

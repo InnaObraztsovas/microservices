@@ -9,8 +9,14 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\NoPrivateNetworkHttpClient;
 
-class Controller extends AbstractController
+class APIController extends AbstractController
 {
+    private \Symfony\Contracts\HttpClient\HttpClientInterface $client;
+
+    public function __construct()
+    {
+        $this->client = HttpClient::create();
+    }
 //    #[Route('/a/p/i', name: 'app_a_p_i')]
 //    public function index(): Response
 //    {
@@ -20,7 +26,12 @@ class Controller extends AbstractController
 //    }
 public function index()
 {
-    $client = new NoPrivateNetworkHttpClient(HttpClient::create());
-    $client->request('GET', 'http://localhost/');
+//    $client = HttpClient::create();
+    $response = $this->client->request('GET', 'http://users/user');
+    $statusCode = $response->getStatusCode();
+    $content = $response->getContent();
+//    dd($content);
+    dd($statusCode);
 }
+
 }
