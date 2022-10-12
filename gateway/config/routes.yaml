@@ -2,6 +2,11 @@ controllers:
     resource: ../src/Controller/
     type: attribute
 
-user:
-    path: /
-    controller: App\Controller\APIController::index
+#user:
+#    path: /
+#    controller: App\Controller\APIController::index
+
+user1:
+    path: /test
+    controller: App\Controller\APIController::test
+    methods: POST

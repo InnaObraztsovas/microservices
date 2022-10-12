@@ -3,35 +3,39 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpClient\NoPrivateNetworkHttpClient;
 
 class APIController extends AbstractController
 {
-    private \Symfony\Contracts\HttpClient\HttpClientInterface $client;
-
-    public function __construct()
-    {
-        $this->client = HttpClient::create();
-    }
-//    #[Route('/a/p/i', name: 'app_a_p_i')]
-//    public function index(): Response
+//    private \Symfony\Contracts\HttpClient\HttpClientInterface $client;
+//
+//    public function __construct()
 //    {
-//        return $this->render('api/index.html.twig', [
-//            'controller_name' => 'APIController',
-//        ]);
+//        $this->client = HttpClient::create();
 //    }
-public function index()
+
+public function index(Request $request)
 {
-//    $client = HttpClient::create();
-    $response = $this->client->request('GET', 'http://users/user');
-    $statusCode = $response->getStatusCode();
-    $content = $response->getContent();
+//$a = $request->getContent();
+return json_encode($request->getUri());
+dd($request);
+//    $response = $this->client->request('GET', 'http://localhost');
+////    $statusCode = $response->getStatusCode();
+//    $content = $response->getContent();
 //    dd($content);
-    dd($statusCode);
+//    dd($statusCode);
 }
+
+    #[Route(path: "/", name: "all", methods: ["POST"])]
+    public function test(Request $request)
+    {
+        return new JsonResponse(['data'], 200, ["Content-Type" => "application/json"]);
+
+    }
 
 }
