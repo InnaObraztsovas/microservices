@@ -14,42 +14,32 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[AsCommand(name: 'user:create-http')]
 class UserHttpRequest extends Command
 {
-    private array $availableRoutesKeys = [
-        'app_user', 'user_store', 'user_show'
-    ];
     private HttpClientInterface $client;
 
-    private $routes = [];
+    private array $routes = [];
 
     public function __construct(RouterInterface $router)
     {
         foreach ($router->getRouteCollection()->all() as $route_name => $route) {
-            if (in_array($route_name, $this->availableRoutesKeys)) {
-                $this->routes[$route_name] = $route->getPath();
-            }
+            $this->routes[$route_name] = [
+                'path' => $route->getPath(),
+                'methods' => $route->getMethods(),
+            ];
         }
 
         $this->client = HttpClient::create();
         parent::__construct();
     }
 
-    public function getRoutes(): array
-    {
-        return $this->routes;
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $allRoutes = $this->getRoutes();
+        $response = $this->client->request('POST', 'http://gateway/register', ['json' => [
+            'routes' => $this->routes,
+            'service_name' => 'users',
+        ]]);
 
-        try {
-            $result = $this->client->request('POST', 'http://localhost:80/test', ['json' => json_encode($allRoutes)]);
-            var_dump($result->toArray());
-        } catch (\Throwable $e) {
-            dd($e->getMessage());
-//            dd($result->getStatusCode());
+        $output->writeln($response->getContent(false));
 
-        }
         return Command::SUCCESS;
 
     }

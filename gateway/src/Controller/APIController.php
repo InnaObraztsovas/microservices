@@ -3,39 +3,25 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
-use Symfony\Component\HttpClient\HttpClient;
 
 class APIController extends AbstractController
 {
-//    private \Symfony\Contracts\HttpClient\HttpClientInterface $client;
-//
-//    public function __construct()
-//    {
-//        $this->client = HttpClient::create();
-//    }
-
-public function index(Request $request)
-{
-//$a = $request->getContent();
-return json_encode($request->getUri());
-dd($request);
-//    $response = $this->client->request('GET', 'http://localhost');
-////    $statusCode = $response->getStatusCode();
-//    $content = $response->getContent();
-//    dd($content);
-//    dd($statusCode);
-}
-
-    #[Route(path: "/", name: "all", methods: ["POST"])]
-    public function test(Request $request)
+    #[Route(path: '/register', name: 'register_service', methods: 'POST')]
+    public function register(Request $request)
     {
-        return new JsonResponse(['data'], 200, ["Content-Type" => "application/json"]);
+        $routes = json_decode($request->getContent(), flags: JSON_THROW_ON_ERROR);
 
+        //save routes
+
+        return $this->json(null);
+    }
+
+    #[Route(path: '/', name: 'entrypoint')]
+    public function handle()
+    {
+        //check if you can match request to one of saved route and forward call
     }
 
 }
