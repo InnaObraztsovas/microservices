@@ -40,16 +40,10 @@ class UserHttpRequest extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $allRoutes = $this->getRoutes();
+        $response = $this->client->request('POST', 'http://gateway/register', ['json' => $this->getRoutes()]);
 
-        try {
-            $result = $this->client->request('POST', 'http://localhost:80/test', ['json' => json_encode($allRoutes)]);
-            var_dump($result->toArray());
-        } catch (\Throwable $e) {
-            dd($e->getMessage());
-//            dd($result->getStatusCode());
+        $output->writeln($response->getContent(false));
 
-        }
         return Command::SUCCESS;
 
     }
