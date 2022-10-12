@@ -14,33 +14,29 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[AsCommand(name: 'user:create-http')]
 class UserHttpRequest extends Command
 {
-    private array $availableRoutesKeys = [
-        'app_user', 'user_store', 'user_show'
-    ];
     private HttpClientInterface $client;
 
-    private $routes = [];
+    private array $routes = [];
 
     public function __construct(RouterInterface $router)
     {
         foreach ($router->getRouteCollection()->all() as $route_name => $route) {
-            if (in_array($route_name, $this->availableRoutesKeys)) {
-                $this->routes[$route_name] = $route->getPath();
-            }
+            $this->routes[$route_name] = [
+                'path' => $route->getPath(),
+                'methods' => $route->getMethods(),
+            ];
         }
 
         $this->client = HttpClient::create();
         parent::__construct();
     }
 
-    public function getRoutes(): array
-    {
-        return $this->routes;
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $response = $this->client->request('POST', 'http://gateway/register', ['json' => $this->getRoutes()]);
+        $response = $this->client->request('POST', 'http://gateway/register', ['json' => [
+            'routes' => $this->routes,
+            'service_name' => 'users',
+        ]]);
 
         $output->writeln($response->getContent(false));
 
