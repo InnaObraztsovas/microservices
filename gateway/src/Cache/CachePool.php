@@ -34,4 +34,9 @@ class CachePool
         return $this->cachePool->hasItem($key);
     }
 
+    public  function delate(string $key)
+    {
+          return  $this->cachePool->clear($key);
+    }
+
 }

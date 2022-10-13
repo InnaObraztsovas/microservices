@@ -33,6 +33,7 @@ class OrderController extends AbstractController
     #[Route('/users/{id}/orders', name: 'order_store', methods:'POST')]
     public function createOrder (EntityManagerInterface $entityManager, Request $request): Response
     {
+        return $this->json('The new order is created',  201);
         $order = new Order();
         $order->setAmount($request->request->get('amount'));
         $order->setUserId($request->request->get('user_id'));
