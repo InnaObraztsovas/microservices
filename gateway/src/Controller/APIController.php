@@ -2,40 +2,45 @@
 
 namespace App\Controller;
 
+use App\Cache\CachePool;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
-use Symfony\Component\HttpClient\HttpClient;
 
 class APIController extends AbstractController
 {
-//    private \Symfony\Contracts\HttpClient\HttpClientInterface $client;
-//
-//    public function __construct()
-//    {
-//        $this->client = HttpClient::create();
-//    }
 
-public function index(Request $request)
-{
-//$a = $request->getContent();
-return json_encode($request->getUri());
-dd($request);
-//    $response = $this->client->request('GET', 'http://localhost');
-////    $statusCode = $response->getStatusCode();
-//    $content = $response->getContent();
-//    dd($content);
-//    dd($statusCode);
-}
-
-    #[Route(path: "/", name: "all", methods: ["POST"])]
-    public function test(Request $request)
+    public function __construct(public CachePool $cachePool)
     {
-        return new JsonResponse(['data'], 200, ["Content-Type" => "application/json"]);
+    }
 
+    #[Route(path: '/register', name: 'register_service', methods: 'POST')]
+    public function register(Request $request)
+    {
+        $data = json_decode($request->getContent(), flags: JSON_THROW_ON_ERROR);
+        $cache = md5($data->service_name);
+        if ($this->cachePool->existCache($cache)) {
+            $msg = 'Already exist';
+           $this->cachePool->has($cache);
+        } else {
+            $msg = 'Successfully stored to cache';
+            $this->cachePool->save($cache, (array)$data->routes);
+        }
+        return $this->json(['msg' => $msg], 201);
+
+    }
+
+
+    #[Route(path: '/{slug}', name: 'entrypoint', requirements: ['slug' => '.*'], methods: 'ANY')]
+    public function handle(Request $request)
+    {
+      $uri = json_encode($request->getRequestUri());
+//
+//     if ($this->cachePool->has($uri)) {
+//         $this->redirectToRoute($uri);
+//     }
+      dd($uri);
+        //check if you can match request to one of saved route and forward call
     }
 
 }

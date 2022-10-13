@@ -12,7 +12,7 @@ use App\Entity\User;
 
 class UserController extends AbstractController
 {
-    #[Route('/user', name: 'app_user', methods: 'GET')]
+    #[Route('/user', name: 'user', methods: 'GET')]
     public function index(EntityManagerInterface $entityManager): Response
     {
         $users = $entityManager->getRepository(User::class)->findAll();
@@ -28,7 +28,7 @@ class UserController extends AbstractController
         return $this->json($data);
     }
 
-    #[Route('/user', name: 'user_store', methods:'POST')]
+    #[Route('/user', name: 'store', methods:'POST')]
     public function createUser (EntityManagerInterface $entityManager, Request $request): Response
     {
         $user = new User();
@@ -40,7 +40,7 @@ class UserController extends AbstractController
 
     }
 
-    #[Route('/user/{id}', name: 'user_show', methods:'GET')]
+    #[Route('/user/{id}', name: 'show', methods:'GET')]
     public function getById (EntityManagerInterface $entityManager, int $id): Response
     {
         $repository = $entityManager->getRepository(User::class);
