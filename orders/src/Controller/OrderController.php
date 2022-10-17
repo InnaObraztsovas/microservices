@@ -16,13 +16,6 @@ class OrderController extends AbstractController
     {
         $orders = $entityManager->getRepository(Order::class)->findAll();
 
-        $or = new Order();
-        $or->setAmount(100);
-        $or->setUserId(1);
-        $or->setCreatedAt(new \DateTimeImmutable());
-        $entityManager->persist($or);
-        $entityManager->flush();
-
         $data = [];
 
         foreach ($orders as $order) {
@@ -33,13 +26,12 @@ class OrderController extends AbstractController
                 'user_id' => $order->getUserId()
             ];
         }
-        return $this->json($data);
+        return $this->json('Type user id');
     }
 
     #[Route('/users/{id}/orders', name: 'order_store', methods:'POST')]
     public function createOrder (EntityManagerInterface $entityManager, Request $request): Response
     {
-//        $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
         $order = new Order();
         $order->setAmount($request->get('amount'));
         $order->setUserId($request->get('user_id'));

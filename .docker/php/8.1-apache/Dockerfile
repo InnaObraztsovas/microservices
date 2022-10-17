@@ -10,7 +10,7 @@ RUN pecl install zip \
     && docker-php-ext-install pdo_mysql
 
 
-RUN a2enmod
+RUN a2enmod rewrite
 
 COPY --from=composer:2.1.9 /usr/bin/composer /usr/bin/composer
 
