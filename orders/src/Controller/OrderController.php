@@ -32,9 +32,11 @@ class OrderController extends AbstractController
     #[Route('/users/{id}/orders', name: 'order_store', methods:'POST')]
     public function createOrder (EntityManagerInterface $entityManager, Request $request): Response
     {
+        $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
+
         $order = new Order();
-        $order->setAmount($request->get('amount'));
-        $order->setUserId($request->get('user_id'));
+        $order->setAmount($data['amount']);
+        $order->setUserId($data['user_id']);
         $order->setCreatedAt(new \DateTimeImmutable());
         $entityManager->persist($order);
         $entityManager->flush();

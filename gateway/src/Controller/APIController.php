@@ -57,11 +57,17 @@ class APIController extends AbstractController
     #[Route(path: '/{slug}', name: 'entrypoint', requirements: ['slug' => '.*'])]
     public function handle(Request $request): Response
     {
+
+        $options = [
+            'headers' => [
+                'Content-Type: application/json',
+            ],
+            'body' => $request->getContent()
+        ];
         $cacheData = json_decode($this->cachePool->get(md5(date('Y-m-d'))), true);
-        $url = preg_replace('/\d+/','{id}', $request->getPathInfo());
+        $url = preg_replace('/\d+/', '{id}', $request->getPathInfo());
         $service = $cacheData[$request->getMethod()][$url];
-        $response = $this->client->request($request->getMethod(),"http://{$service}{$request->getRequestUri()}" );
-//        return $this->json(['data' => $response->toArray()], $response->getStatusCode());
+        $response = $this->client->request($request->getMethod(), "http://{$service}{$request->getRequestUri()}", $options);
         dd($response->getContent());
 
     }

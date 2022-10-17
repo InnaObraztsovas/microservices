@@ -30,8 +30,10 @@ class UserController extends AbstractController
     #[Route('/user', name: 'store', methods:'POST')]
     public function createUser (EntityManagerInterface $entityManager, Request $request): Response
     {
+        $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
         $user = new User();
-        $user->setEmail($request->get('email'));
+        $user->setEmail($data['email']);
+
         $entityManager->persist($user);
         $entityManager->flush();
 
