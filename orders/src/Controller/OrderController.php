@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +15,13 @@ class OrderController extends AbstractController
     public function index(EntityManagerInterface $entityManager): Response
     {
         $orders = $entityManager->getRepository(Order::class)->findAll();
+
+        $or = new Order();
+        $or->setAmount(100);
+        $or->setUserId(1);
+        $or->setCreatedAt(new \DateTimeImmutable());
+        $entityManager->persist($or);
+        $entityManager->flush();
 
         $data = [];
 
@@ -33,10 +39,11 @@ class OrderController extends AbstractController
     #[Route('/users/{id}/orders', name: 'order_store', methods:'POST')]
     public function createOrder (EntityManagerInterface $entityManager, Request $request): Response
     {
-        return $this->json('The new order is created',  201);
+//        $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
         $order = new Order();
-        $order->setAmount($request->request->get('amount'));
-        $order->setUserId($request->request->get('user_id'));
+        $order->setAmount($request->get('amount'));
+        $order->setUserId($request->get('user_id'));
+        $order->setCreatedAt(new \DateTimeImmutable());
         $entityManager->persist($order);
         $entityManager->flush();
 

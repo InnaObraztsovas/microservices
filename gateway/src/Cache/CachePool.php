@@ -21,12 +21,13 @@ class CachePool
         }
     }
 
-    public function has(string $key): string
+    public function get(string $key): ?string
     {
         if ($this->cachePool->hasItem($key)) {
             $data = $this->cachePool->getItem($key);
+            return $data->get();
         }
-        return $data->get();
+        return null;
     }
 
     public function existCache(string $key): bool

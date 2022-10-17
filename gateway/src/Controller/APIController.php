@@ -8,7 +8,6 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class APIController extends AbstractController
 {
@@ -25,7 +24,7 @@ class APIController extends AbstractController
         $cache = md5(date('Y-m-d'));
         if ($this->cachePool->existCache($cache)) {
             $msg = 'Rebuild';
-            $cacheData = $this->cachePool->has($cache);
+            $cacheData = $this->cachePool->get($cache);
             $newRoutes = $this->transform($data, json_decode($cacheData, true));
             $this->cachePool->delate($cache);
             $this->cachePool->save($cache, $newRoutes);
@@ -58,10 +57,12 @@ class APIController extends AbstractController
     #[Route(path: '/{slug}', name: 'entrypoint', requirements: ['slug' => '.*'])]
     public function handle(Request $request): Response
     {
-        $cacheData = json_decode($this->cachePool->has(md5(date('Y-m-d'))), true);
-        $url = preg_replace('/\d+/','{id}', $request->getRequestUri());
+        $cacheData = json_decode($this->cachePool->get(md5(date('Y-m-d'))), true);
+        $url = preg_replace('/\d+/','{id}', $request->getPathInfo());
         $service = $cacheData[$request->getMethod()][$url];
         $response = $this->client->request($request->getMethod(),"http://{$service}{$request->getRequestUri()}" );
-        return $this->json(['data' => $response->toArray()], $response->getStatusCode());
+//        return $this->json(['data' => $response->toArray()], $response->getStatusCode());
+        dd($response->getContent());
+
     }
 }

@@ -16,7 +16,7 @@ services:
       dockerfile: Dockerfile
     tty: true
     stdin_open: true
-    entrypoint: php bin/console user:create-http
+#    entrypoint: php bin/console user:create-http
     volumes:
       - ./users:/var/www/html
 
@@ -26,16 +26,10 @@ services:
       dockerfile: Dockerfile
     tty: true
     stdin_open: true
-    entrypoint: php bin/console order:create-http
+#    entrypoint: php bin/console order:create-http
     volumes:
       - ./orders:/var/www/html
 
-  composer:
-    image: composer/composer
-    command:
-      - composer install
-    volumes:
-      - ./:/app
 
 
   database:
