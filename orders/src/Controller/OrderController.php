@@ -41,7 +41,7 @@ class OrderController extends AbstractController
                 'user_id' => $order->getUserId()
             ];
         }
-        return $this->json('List of users with pagination (10 items per page)');
+        return $this->json($data, 200);
     }
 
     #[Route('/users/{id}/orders', name: 'order_store', methods: 'POST')]
@@ -68,7 +68,7 @@ class OrderController extends AbstractController
         if (!$order) {
             return $this->json('No order found for id' . $id, 404);
         }
-        return $this->json($order);
+        return $this->json($order, 200);
     }
 
 }

@@ -38,7 +38,7 @@ class UserController extends AbstractController
             ];
         }
 
-        return $this->json('List of users with pagination (10 items per page)');
+        return $this->json($data, 200);
     }
 
     #[Route('/user', name: 'store', methods: 'POST')]
@@ -63,7 +63,7 @@ class UserController extends AbstractController
         if (!$user) {
             return $this->json('No user found for id' . $id, 404);
         }
-        return $this->json('Ok');
+        return $this->json($user, 200);
     }
 
 }
