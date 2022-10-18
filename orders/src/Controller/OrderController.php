@@ -11,14 +11,29 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class OrderController extends AbstractController
 {
-    #[Route('/order', name: 'app_order',methods: 'GET')]
-    public function index(EntityManagerInterface $entityManager): Response
+    #[Route('/order', name: 'app_order', methods: 'GET')]
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $orders = $entityManager->getRepository(Order::class)->findAll();
+        $orders = $entityManager->getRepository(Order::class);
 
-        $data = [];
+        $query = $orders->createQueryBuilder('o')
+            ->orderBy('o.id', 'DESC')
+            ->getQuery();
 
-        foreach ($orders as $order) {
+        $page = $request->get('page', '');
+
+        $paginator = new \Doctrine\ORM\Tools\Pagination\Paginator($query);
+
+        if (!empty($page)) {
+            $pageSize = 10;
+            $paginator->getQuery()
+                ->setFirstResult($pageSize * ($page - 1))
+                ->setMaxResults($pageSize);
+        } else {
+            $paginator->getIterator();
+        }
+
+        foreach ($paginator as $order) {
             $data[] = [
                 'id' => $order->getId(),
                 'created_at' => $order->getCreatedAt(),
@@ -26,11 +41,11 @@ class OrderController extends AbstractController
                 'user_id' => $order->getUserId()
             ];
         }
-        return $this->json('Type user id');
+        return $this->json('List of users with pagination (10 items per page)');
     }
 
-    #[Route('/users/{id}/orders', name: 'order_store', methods:'POST')]
-    public function createOrder (EntityManagerInterface $entityManager, Request $request): Response
+    #[Route('/users/{id}/orders', name: 'order_store', methods: 'POST')]
+    public function createOrder(EntityManagerInterface $entityManager, Request $request): Response
     {
         $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -41,12 +56,12 @@ class OrderController extends AbstractController
         $entityManager->persist($order);
         $entityManager->flush();
 
-        return $this->json('The new order is created',  201);
+        return $this->json('The new order is created', 201);
 
     }
 
-    #[Route('/users/{id}/orders', name: 'order_show', methods:'GET')]
-    public function getById (EntityManagerInterface $entityManager, int $id): Response
+    #[Route('/users/{id}/orders', name: 'order_show', methods: 'GET')]
+    public function getById(EntityManagerInterface $entityManager, int $id): Response
     {
         $repository = $entityManager->getRepository(Order::class);
         $order = $repository->find($id);

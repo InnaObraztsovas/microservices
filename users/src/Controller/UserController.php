@@ -12,23 +12,37 @@ use App\Entity\User;
 class UserController extends AbstractController
 {
     #[Route('/user', name: 'user', methods: 'GET')]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $users = $entityManager->getRepository(User::class)->findAll();
+        $users = $entityManager->getRepository(User::class);
 
-        $data = [];
+        $query = $users->createQueryBuilder('u')
+            ->orderBy('u.id', 'DESC')
+            ->getQuery();
+        $page = $request->get('page', '');
 
-        foreach ($users as $user) {
+        $paginator = new \Doctrine\ORM\Tools\Pagination\Paginator($query);
+        if (!empty($page)) {
+            $pageSize = 10;
+            $paginator->getQuery()
+                ->setFirstResult($pageSize * ($page - 1))
+                ->setMaxResults($pageSize);
+        } else {
+            $paginator->getIterator();
+        }
+
+        foreach ($paginator as $user) {
             $data[] = [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
             ];
         }
-        return $this->json('Type user id');
+
+        return $this->json('List of users with pagination (10 items per page)');
     }
 
-    #[Route('/user', name: 'store', methods:'POST')]
-    public function createUser (EntityManagerInterface $entityManager, Request $request): Response
+    #[Route('/user', name: 'store', methods: 'POST')]
+    public function createUser(EntityManagerInterface $entityManager, Request $request): Response
     {
         $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
         $user = new User();
@@ -37,12 +51,12 @@ class UserController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return $this->json('The new user is created',  201);
+        return $this->json('The new user is created', 201);
 
     }
 
-    #[Route('/user/{id}', name: 'show', methods:'GET')]
-    public function getById (EntityManagerInterface $entityManager, int $id): Response
+    #[Route('/user/{id}', name: 'show', methods: 'GET')]
+    public function getById(EntityManagerInterface $entityManager, int $id): Response
     {
         $repository = $entityManager->getRepository(User::class);
         $user = $repository->find($id);

@@ -66,9 +66,12 @@ class APIController extends AbstractController
         ];
         $cacheData = json_decode($this->cachePool->get(md5(date('Y-m-d'))), true);
         $url = preg_replace('/\d+/', '{id}', $request->getPathInfo());
-        $service = $cacheData[$request->getMethod()][$url];
+        try {
+            $service = $cacheData[$request->getMethod()][$url];
+        } catch (\Throwable) {
+            return new Response('Enter the correct service', 404);
+        }
         $response = $this->client->request($request->getMethod(), "http://{$service}{$request->getRequestUri()}", $options);
-        dd($response->getContent());
-
+        return new Response($response->getContent());
     }
 }
