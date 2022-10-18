@@ -30,9 +30,9 @@ class UserController extends AbstractController
         } else {
             $paginator->getIterator();
         }
-
+        $data = [];
         foreach ($paginator as $user) {
-            $data[] = [
+            $data = [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
             ];

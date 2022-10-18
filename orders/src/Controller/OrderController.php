@@ -33,8 +33,9 @@ class OrderController extends AbstractController
             $paginator->getIterator();
         }
 
+        $data = [];
         foreach ($paginator as $order) {
-            $data[] = [
+            $data = [
                 'id' => $order->getId(),
                 'created_at' => $order->getCreatedAt(),
                 'amount' => $order->getAmount(),
