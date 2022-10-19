@@ -1,5 +1,5 @@
 <?php
-namespace App\Cache;
+namespace App\Storage;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class CachePool
@@ -11,7 +11,7 @@ class CachePool
         $this->cachePool = new FilesystemAdapter('', 0, 'cache');
     }
 
-    public function save(string $key, array $response): void
+    public function save(string $key, mixed $response): void
     {
         $data = $this->cachePool->getItem($key);
         if (!$data->isHit()) {

@@ -24,6 +24,7 @@ class UserHttpRequest extends Command
             $this->routes[$route_name] = [
                 'path' => $route->getPath(),
                 'methods' => $route->getMethods(),
+                'defaults' => $route->getDefaults()
             ];
         }
 
@@ -31,14 +32,14 @@ class UserHttpRequest extends Command
         parent::__construct();
     }
 
-        protected function execute(InputInterface $input, OutputInterface $output): int
-        {
-            $response = $this->client->request('POST', 'http://gateway/register', ['json' => [
-                'routes' => $this->routes,
-                'service_name' => 'users',
-            ]]);
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $response = $this->client->request('POST', 'http://gateway/register', ['json' => [
+            'routes' => $this->routes,
+            'service_name' => 'users',
+        ]]);
 
-            $output->writeln($response->getContent(false));
-            return Command::SUCCESS;
-        }
+        $output->writeln($response->getContent(false));
+        return Command::SUCCESS;
     }
+}

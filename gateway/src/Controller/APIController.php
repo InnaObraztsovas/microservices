@@ -2,56 +2,71 @@
 
 namespace App\Controller;
 
-use App\Cache\CachePool;
+use App\Storage\CachePool;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\RouterInterface;
 
 class APIController extends AbstractController
 {
-
     public function __construct(public CachePool $cachePool)
     {
         $this->client = HttpClient::create();
     }
 
     #[Route(path: '/register', name: 'register_service', methods: 'POST')]
-    public function register(Request $request)
+    public function register(Request $request, RouterInterface $router)
     {
         $data = json_decode($request->getContent(), flags: JSON_THROW_ON_ERROR);
-        $cache = md5(date('Y-m-d'));
-        if ($this->cachePool->existCache($cache)) {
-            $msg = 'Rebuild';
-            $cacheData = $this->cachePool->get($cache);
-            $newRoutes = $this->transform($data, json_decode($cacheData, true));
-            $this->cachePool->delate($cache);
-            $this->cachePool->save($cache, $newRoutes);
-        } else {
-            $msg = 'Successfully stored to cache';
-            $this->cachePool->save($cache, $this->transform($data));
+//        $collection = new RouteCollection();
+        foreach ($data->routes as $name => $route) {
+            $newRoute = new \Symfony\Component\Routing\Route($route->path,
+                ['_controller' => $route->defaults->_controller]);
+            $newRoute->setMethods($route->methods);
+            $router->getRouteCollection()->add($name, $newRoute);
+//            $collection->add($name, $newRoute);
         }
-        return $this->json(['msg' => $msg], 201);
+        $routes = $router->getRouteCollection()->all();
+        var_dump($routes);die();
+
+//        $cache = md5(date('Y-m-d'));
+//        if ($this->cachePool->existCache($cache)) {
+//            $msg = 'Rebuild';
+//            $cacheData = $this->cachePool->get($cache);
+//            $newRoutes = $this->transform($data, json_decode($cacheData, true));
+//            $this->cachePool->delate($cache);
+//            $this->cachePool->save($cache, $newRoutes);
+//        } else {
+//            $msg = 'Successfully stored to cache';
+//            $this->cachePool->save($cache, $this->transform($data));
+//        }
+//        return $this->json(['msg' => $msg], 201);
     }
 
-    private function transform(object $data, array $cache = []): array
-    {
-        $routes = $cache;
-        foreach ($data->routes as $route) {
-            if (!empty($route->methods)) {
-                foreach ($route->methods as $method) {
-                    if (empty($routes[$method])) {
-                        $routes[$method] = [$route->path => $data->service_name];
-                    } else {
-                        $routes[$method] += [$route->path => $data->service_name];
-                    }
-                }
-            }
-        }
-
-        return $routes;
-    }
+//    private function transform(object $data, array $cache = []): array
+//    {
+//        $routes = $cache;
+//        foreach ($data->routes as $route) {
+//            if (!empty($route->methods)) {
+//                foreach ($route->methods as $method) {
+//                    if (empty($routes[$method])) {
+//                        $routes[$method] = [$route->path => $data->service_name];
+//                    } else {
+//                        $routes[$method] += [$route->path => $data->service_name];
+//                    }
+//                }
+//            }
+//        }
+//        return $routes;
+//    }
 
 
     #[Route(path: '/{slug}', name: 'entrypoint', requirements: ['slug' => '.*'])]
