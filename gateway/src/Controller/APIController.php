@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Storage\CachePool;
+use App\Storage\RoutesStorage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\FileResource;
@@ -17,76 +18,53 @@ use Symfony\Component\Routing\RouterInterface;
 
 class APIController extends AbstractController
 {
-    public function __construct(public CachePool $cachePool)
+    public function __construct(private RoutesStorage $routesStorage)
     {
         $this->client = HttpClient::create();
     }
 
     #[Route(path: '/register', name: 'register_service', methods: 'POST')]
-    public function register(Request $request, RouterInterface $router)
+    public function register(Request $request)
     {
-        $data = json_decode($request->getContent(), flags: JSON_THROW_ON_ERROR);
-//        $collection = new RouteCollection();
-        foreach ($data->routes as $name => $route) {
-            $newRoute = new \Symfony\Component\Routing\Route($route->path,
-                ['_controller' => $route->defaults->_controller]);
-            $newRoute->setMethods($route->methods);
-            $router->getRouteCollection()->add($name, $newRoute);
-//            $collection->add($name, $newRoute);
+        $data = json_decode($request->getContent(), true, flags: JSON_THROW_ON_ERROR);
+
+        $routes = [];
+
+        foreach ($data['routes'] as $route) {
+            $routes[] = new \Symfony\Component\Routing\Route(
+                path: $route['path'],
+                defaults: $route['defaults'],
+                host: $data['service_name'],
+                methods: $route['methods'],
+            );
         }
-        $routes = $router->getRouteCollection()->all();
-        var_dump($routes);die();
 
-//        $cache = md5(date('Y-m-d'));
-//        if ($this->cachePool->existCache($cache)) {
-//            $msg = 'Rebuild';
-//            $cacheData = $this->cachePool->get($cache);
-//            $newRoutes = $this->transform($data, json_decode($cacheData, true));
-//            $this->cachePool->delate($cache);
-//            $this->cachePool->save($cache, $newRoutes);
-//        } else {
-//            $msg = 'Successfully stored to cache';
-//            $this->cachePool->save($cache, $this->transform($data));
-//        }
-//        return $this->json(['msg' => $msg], 201);
+        if ($routes) {
+            $this->routesStorage->store($data['service_name'], ...$routes);
+        }
+
+        return $this->json(null, 201);
     }
-
-//    private function transform(object $data, array $cache = []): array
-//    {
-//        $routes = $cache;
-//        foreach ($data->routes as $route) {
-//            if (!empty($route->methods)) {
-//                foreach ($route->methods as $method) {
-//                    if (empty($routes[$method])) {
-//                        $routes[$method] = [$route->path => $data->service_name];
-//                    } else {
-//                        $routes[$method] += [$route->path => $data->service_name];
-//                    }
-//                }
-//            }
-//        }
-//        return $routes;
-//    }
 
 
     #[Route(path: '/{slug}', name: 'entrypoint', requirements: ['slug' => '.*'])]
     public function handle(Request $request): Response
     {
-
-        $options = [
-            'headers' => [
-                'Content-Type: application/json',
-            ],
-            'body' => $request->getContent()
-        ];
-        $cacheData = json_decode($this->cachePool->get(md5(date('Y-m-d'))), true);
-        $url = preg_replace('/\d+/', '{id}', $request->getPathInfo());
         try {
-            $service = $cacheData[$request->getMethod()][$url];
+            $route = $this->routesStorage->match($request);
         } catch (\Throwable) {
-            return new Response('Enter the correct service', 404);
+            return $this->json(['error' => 'Route not found'], Response::HTTP_NOT_FOUND);
         }
-        $response = $this->client->request($request->getMethod(), "http://{$service}{$request->getRequestUri()}", $options);
-        return new Response($response->getContent());
+
+        $response = $this->client->request(
+            $request->getMethod(),
+            "http://{$route->getHost()}{$request->getRequestUri()}",
+            [
+                'headers' => $request->headers->all(),
+                'body' => $request->getContent()
+            ]
+        );
+
+        return new Response($response->getContent(), $response->getStatusCode(), $response->getHeaders());
     }
 }

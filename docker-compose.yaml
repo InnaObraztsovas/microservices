@@ -6,7 +6,7 @@ services:
       context: .docker/php/8.1-apache
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "88:80"
     volumes:
       - ./gateway:/var/www/html
 
@@ -41,5 +41,3 @@ services:
       MYSQL_DATABASE: symfony
     ports:
       - "3306:3306"
-
-

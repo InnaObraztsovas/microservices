@@ -28,6 +28,7 @@ class OrderHttpRequest extends Command
         }
 
         $this->client = HttpClient::create();
+
         parent::__construct();
     }
 
@@ -39,6 +40,7 @@ class OrderHttpRequest extends Command
         ]]);
 
         $output->writeln($response->getContent(false));
+
         return Command::SUCCESS;
     }
 }
