@@ -19,6 +19,7 @@ class UserController extends AbstractController
         $query = $users->createQueryBuilder('u')
             ->orderBy('u.id', 'DESC')
             ->getQuery();
+
         $page = $request->get('page', '');
 
         $paginator = new \Doctrine\ORM\Tools\Pagination\Paginator($query);
@@ -30,9 +31,11 @@ class UserController extends AbstractController
         } else {
             $paginator->getIterator();
         }
+
         $data = [];
+
         foreach ($paginator as $user) {
-            $data = [
+            $data[] = [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
             ];

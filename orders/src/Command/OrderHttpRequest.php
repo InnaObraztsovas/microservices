@@ -23,7 +23,7 @@ class OrderHttpRequest extends Command
             $this->routes[$route_name] = [
                 'path' => $route->getPath(),
                 'methods' => $route->getMethods(),
-//                'host' => 'orders'
+                'defaults' => $route->getDefaults()
             ];
         }
 

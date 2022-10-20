@@ -1,6 +1,8 @@
 <?php
 namespace App\Storage;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Routing\Route;
 
 class CachePool
 {
@@ -8,36 +10,35 @@ class CachePool
 
     public function __construct()
     {
-        $this->cachePool = new FilesystemAdapter('', 0, 'cache');
+        $this->cachePool = new FilesystemAdapter('routes', 0, 'cache');
     }
 
-    public function save(string $key, mixed $response): void
+    public function save(array $routes): void
     {
-        $data = $this->cachePool->getItem($key);
-        if (!$data->isHit()) {
-            $data->set(json_encode($response));
-            $this->cachePool->save($data);
+        $data = $this->cachePool->getItem('routes');
 
+        if (!$data->isHit()) {
+            $data->set($routes);
+            $this->cachePool->save($data);
         }
     }
 
-    public function get(string $key): ?string
+    /**
+     * @return Route[][]
+     * @throws InvalidArgumentException
+     */
+    public function get(): array
     {
-        if ($this->cachePool->hasItem($key)) {
-            $data = $this->cachePool->getItem($key);
+        if ($this->cachePool->hasItem('routes')) {
+            $data = $this->cachePool->getItem('routes');
             return $data->get();
         }
-        return null;
+
+        return [];
     }
 
-    public function existCache(string $key): bool
+    public  function delete()
     {
-        return $this->cachePool->hasItem($key);
+        return  $this->cachePool->clear('routes');
     }
-
-    public  function delate(string $key)
-    {
-          return  $this->cachePool->clear($key);
-    }
-
 }

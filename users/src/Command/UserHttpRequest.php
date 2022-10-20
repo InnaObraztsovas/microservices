@@ -24,7 +24,7 @@ class UserHttpRequest extends Command
             $this->routes[$route_name] = [
                 'path' => $route->getPath(),
                 'methods' => $route->getMethods(),
-//                'host' => 'users'
+                'defaults' => $route->getDefaults()
             ];
         }
 
