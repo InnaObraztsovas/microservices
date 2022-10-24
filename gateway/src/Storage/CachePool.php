@@ -1,16 +1,14 @@
 <?php
 namespace App\Storage;
 use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Routing\Route;
 
 class CachePool
 {
-    private FilesystemAdapter $cachePool;
 
-    public function __construct()
+    public function __construct(private AdapterInterface $cachePool)
     {
-        $this->cachePool = new FilesystemAdapter('routes', 0, 'cache');
     }
 
     public function save(array $routes): void

@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Storage\CachePool;
 use App\Storage\RoutesStorage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,8 +13,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class APIController extends AbstractController
 {
-    public function __construct(private RoutesStorage $routesStorage)
+    public function __construct()
     {
+        $this->routesStorage = new RoutesStorage(new CachePool(
+            new FilesystemAdapter('routes', 0, 'cache')
+        ));
         $this->client = HttpClient::create();
     }
 

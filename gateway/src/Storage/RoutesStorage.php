@@ -10,6 +10,7 @@ use Symfony\Component\Routing\RouteCollection;
 
 class RoutesStorage
 {
+
     public function __construct(private CachePool $cachePool)
     {
     }

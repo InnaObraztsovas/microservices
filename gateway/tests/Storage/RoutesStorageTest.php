@@ -9,7 +9,11 @@ class RoutesStorageTest extends \PHPUnit\Framework\TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->storage = new \App\Storage\RoutesStorage(new \App\Storage\CachePool(new \Symfony\Component\Cache\Adapter\ArrayAdapter()));
+        $this->storage = new \App\Storage\RoutesStorage(
+            new \App\Storage\CachePool(
+                new \Symfony\Component\Cache\Adapter\ArrayAdapter()
+            )
+        );
     }
 
 
