@@ -1,6 +1,5 @@
 <?php
 
-use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\Route;
 
 
@@ -10,48 +9,27 @@ class RoutesStorageTest extends \PHPUnit\Framework\TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->cachePool = $this->createMock(\App\Storage\CachePool::class);
+        $this->storage = new \App\Storage\RoutesStorage(new \App\Storage\CachePool(new \Symfony\Component\Cache\Adapter\ArrayAdapter()));
     }
 
-    public function testIfRouteMatch(): void
-    {
-        $routes = [new Route(path: '/test', host: 'test', methods: 'GET')];
-
-        $this->cachePool->expects($this->any())->method('get')->willReturn($routes);
-        $match = $this->createMock(UrlMatcher::class);
-        $matchResult = ['route'=>'route_name'];
-        $match->expects($this->any())->method('matchRequest')->willReturn($matchResult);
-
-        $this->assertNotEmpty($matchResult);
-
-    }
-
-    public function testIfRouteNotMatch(): void
-    {
-
-        $routes = [new Route(path: '/test', host: 'test', methods: 'GET')];
-
-        $this->cachePool->expects($this->any())->method('get')->willReturn($routes);
-
-        $match = $this->createMock(UrlMatcher::class);
-        $matchResult = [];
-        $exception = new \Symfony\Component\Routing\Exception\RouteNotFoundException();
-
-        $match->expects($this->any())->method('matchRequest')->willReturn($matchResult)->willThrowException($exception);
-
-        $this->assertEmpty($matchResult);
-
-    }
 
     public function testStore(): void
     {
-        $routes = [new Route(path: '/test', host: 'test', methods: 'GET')];
 
-        $this->cachePool->expects($this->any())->method('get')->willReturn($routes);
-        $this->cachePool->expects($this->any())->method('delete');
-        $this->cachePool->expects($this->any())->method('save');
+        $this->storage->store('users', new Route('/path1'), new Route('/path2'));
 
         $this->assertTrue(true);
+
+    }
+
+    public function testMatch(): void
+    {
+        $this->storage->store('users', new Route('/path1'), new Route('/path2'));
+        $route = $this->storage->match(\Symfony\Component\HttpFoundation\Request::create('/path1'));
+        $this->assertInstanceOf(Route::class, $route);
+
+        $this->expectException(\Symfony\Component\Routing\Exception\ResourceNotFoundException::class);
+        $this->storage->match(\Symfony\Component\HttpFoundation\Request::create('/path3'));
 
     }
 }
